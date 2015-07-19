@@ -27,29 +27,28 @@ function Class() {
 
 	var newClass =  function aNewClass() {
 		BaseClass.call(this,className);
-		for(var p in classContents){
-			if(typeof classContents[p] === "function"){
-				Object.defineProperty(this,p, {
-					value:classContents[p],
-				    enumerable: true
-				});
-			}else {
-				Object.defineProperty(this,p, {
-					value:classContents[p],
-				    enumerable: true
-				});
-			}
-		}
+
 	}
 	
 	if(argsLength === 3){
 		superClass = arguments[1];
+		for(var property in superClass){
+			if(superClass.hasOwnProperty(property)){
+				newClass[property] = superClass[property];
+			}
+		}
 		newClass.prototype = Object.create(superClass.prototype);
-		console.log("inherent");
 	}else{
 		newClass.prototype = Object.create(BaseClass.prototype);
 	}
 	newClass.prototype.constructor = newClass;
+	
+	for(var p in classContents){
+		Object.defineProperty(newClass.prototype,p, {
+			value:classContents[p],
+		    enumerable: true
+		});
+	}
 	
 	return newClass;
 }
@@ -64,7 +63,7 @@ console.log(a1.GetClassName());
 
 var B = Class("B",A,{});
 var b = new B();
-console.log(b.doSomething());
+b.doSomething();
 console.log(b.GetClassName());
 
 var a2 = new A();
