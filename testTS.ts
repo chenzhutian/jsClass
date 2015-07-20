@@ -18,7 +18,11 @@ class A{
 	}
 }
 
-class B extends A{
+interface D{
+	
+}
+
+class B extends A implements D{
 	private myMember1:string;
 	public myMember2:number;
 	
