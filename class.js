@@ -11,11 +11,10 @@ class(stirng name,{
 
 //BaseClass(className)
 function BaseClass() {
-	this.numOfArgs = arguments.length;
 }
 
 BaseClass.prototype.GetClassName = function(){
-	return this.numOfArgs;
+	return this.className;
 }
 
 //Class(className,classContent)
@@ -28,10 +27,10 @@ function Class() {
 
 	var newClass;
 	if(classContents.hasOwnProperty("constructor")){
-		newClass = new Function("superClass","constructor","return function " + className + "(){superClass.apply(this,arguments); constructor.apply(this,arguments);}")(superClass,classContents["constructor"]);
+		newClass = (new Function("superClass","constructor","return function " + className + "(){superClass.apply(this,arguments); constructor.apply(this,arguments);}")(superClass,classContents["constructor"]));
 		delete classContents["constructor"];
 	} else {
-		newClass = new Function("superClass","return function " + className + "(){superClass.apply(this,arguments);}")(superClass);
+		newClass = (new Function("superClass","return function " + className + "(){superClass.apply(this,arguments);}")(superClass));
 	}
 	
 	//extends or not
@@ -44,6 +43,7 @@ function Class() {
 	}
 	newClass.prototype = Object.create(superClass.prototype);
 	newClass.prototype.constructor = newClass;
+	newClass.prototype.className = className;
 	
 	for(var p in classContents){
 		Object.defineProperty(newClass.prototype,p, {
@@ -65,6 +65,9 @@ var A = Class("A",{
 		});
 		
 var B = Class("B",A,{
+	constructor:function(){
+		this.childOfB = true;	
+	},
 	childMember:2,
 	dododo:function(){console.log("Let's dodododo")}
 });
@@ -81,6 +84,7 @@ var a2 = new A("asdfsafd");
 console.log(a2.GetClassName());
 var c = new C("cccccccc");
 c.dododo();
+console.log(c.GetClassName());
 
 console.log(a1.GetClassName === b.GetClassName);
 console.log(a1.doSomething === a2.doSomething);
