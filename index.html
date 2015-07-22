@@ -1,5 +1,25 @@
 <body>
 
+
 <script src="./class.js">
+</script>
+<script src="./klass.js"></script>
+<script>
+var Person = klass(function (name) { this.name = name })
+	// .statics({ 
+	// 	head: ':)', 
+	// 	feet: '_|_' 
+	// }) 
+	// .methods({ 
+	// 	walk: function() {} 
+	// });
+
+var p = new Person("klassPerson");
+console.log(p);
+console.log(klass);
+
+function hoo(){};
+hoo.foo = function(){console.log(this);};
+hoo.foo();
 </script>
 </body>

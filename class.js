@@ -9,6 +9,22 @@ class(stirng name,{
 //static
 //extend
 
+function Member(value) {
+	this.value = value;
+}
+
+function StaticMember(value) {
+	Member.call(this,value);
+}
+StaticMember.prototype = Object.create(Member.prototype);
+StaticMember.prototype.constroctor = StaticMember;
+
+function Static(value) {
+	var obj = new StaticMember(value);
+	return obj;
+}
+
+
 //BaseClass(className)
 function BaseClass() {
 }
@@ -46,10 +62,17 @@ function Class() {
 	newClass.prototype.className = className;
 	
 	for(var p in classContents){
-		Object.defineProperty(newClass.prototype,p, {
-			value:classContents[p],
-		    enumerable: true
-		});
+		if(classContents[p] instanceof StaticMember){
+			Object.defineProperty(newClass,p,{
+				value:classContents[p].value,
+				enumerable:true
+			});
+		}else{
+			Object.defineProperty(newClass.prototype,p, {
+				value:classContents[p],
+			    enumerable: true
+			});
+		}
 	}
 	
 	return newClass;
@@ -61,6 +84,7 @@ var A = Class("A",{
 				console.log("param is "+arguments[0]);
 			},
 			member:1,
+			staticMember:Static(2),
 			doSomething: function (){console.log(this.GetClassName()+" it is a function");}
 		});
 		
