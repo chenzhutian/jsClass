@@ -1,25 +1,36 @@
 <body>
 
 
-<script src="./class.js">
-</script>
+<!--script src="./class.js"></script-->
 <script src="./klass.js"></script>
 <script>
-var Person = klass(function (name) { this.name = name })
-	// .statics({ 
-	// 	head: ':)', 
-	// 	feet: '_|_' 
-	// }) 
-	// .methods({ 
-	// 	walk: function() {} 
-	// });
+var Person = klass(function (name) { 
+		this.name = name;
+		console.log("call person constructor"); 
+	})
+	.methods({
+		walk:function(){
+			console.log("walk like a person");
+		}
+	});
+
+
+
+var Boss = Person.extend(function(name){
+					this.bossName = name;
+					console.log("call boss constructor");
+				})
+				.methods({
+					walk:function(){
+						//this.supr();
+						console.log("walk like a boss");
+					}
+				});
 
 var p = new Person("klassPerson");
-console.log(p);
-console.log(klass);
+p.walk();
+var b = new Boss("Gate");
+b.walk();
 
-function hoo(){};
-hoo.foo = function(){console.log(this);};
-hoo.foo();
 </script>
 </body>
