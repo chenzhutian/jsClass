@@ -22,7 +22,7 @@ var Boss = Person.extend(function(name){
 				})
 				.methods({
 					walk:function(){
-						//this.supr();
+						this.supr();
 						console.log("walk like a boss");
 					}
 				});
@@ -30,6 +30,13 @@ var Boss = Person.extend(function(name){
 var p = new Person("klassPerson");
 p.walk();
 var b = new Boss("Gate");
+b.walk();
+
+b.implement({
+	walk:function(){
+		console.log("super walk from now on");
+	}
+});
 b.walk();
 
 </script>

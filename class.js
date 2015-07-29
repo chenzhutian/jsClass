@@ -24,7 +24,6 @@ function Static(value) {
 	return obj;
 }
 
-
 //BaseClass(className)
 function BaseClass() {
 }

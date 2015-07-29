@@ -26,7 +26,6 @@
     return function () {
       var tmp = this.supr;
       this.supr = suprFn;
-      //var undef = {}.fabricatedUndefined;
       var ret = undefined;
       try {
         ret = fn.apply(this, arguments);
@@ -78,7 +77,7 @@
         var obj = {}
         obj[o] = optFn
         return obj
-      }()) : o
+      }()) : o;
       process(this, o, supr)
       return this
     }

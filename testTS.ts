@@ -26,7 +26,9 @@ class B extends A implements D{
 	private myMember1:string;
 	public myMember2:number;
 	
-	constructor(a:string,b:number){
+	constructor(a:string,b:number,c:Object);
+	constructor(a:string,b:number,c:boolean);
+	constructor(a:string,b:number,c){
 		super(a,b);
 		this.myMember1 = a;
 		this.myMember2 = b;

@@ -21,7 +21,7 @@ var A = (function () {
 })();
 var B = (function (_super) {
     __extends(B, _super);
-    function B(a, b) {
+    function B(a, b, c) {
         _super.call(this, a, b);
         this.myMember1 = a;
         this.myMember2 = b;
