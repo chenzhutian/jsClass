@@ -39,14 +39,16 @@ function Class() {
 	var argsLength = arguments.length;
 	var classContents = arguments[argsLength - 1];
 	var superClass = argsLength === 3 ? arguments[1] : BaseClass;
+	var ctor = classContents.hasOwnProperty("constructor") ? classContents["constructor"] : function(){};
+	delete classContents["constructor"];
+	
+	var newClass = (function(){
+		var private;
+				
+		var innerNewClass = (new Function("superClass","constructor","return function " + className + "(){superClass.apply(this,arguments); constructor.apply(this,arguments);}")(superClass,ctor));
 
-	var newClass;
-	if(classContents.hasOwnProperty("constructor")){
-		newClass = (new Function("superClass","constructor","return function " + className + "(){superClass.apply(this,arguments); constructor.apply(this,arguments);}")(superClass,classContents["constructor"]));
-		delete classContents["constructor"];
-	} else {
-		newClass = (new Function("superClass","return function " + className + "(){superClass.apply(this,arguments);}")(superClass));
-	}
+		return innerNewClass;
+	})();
 	
 	//extends or not
 	if(argsLength === 3){
@@ -88,8 +90,8 @@ var A = Class("A",{
 		});
 		
 var B = Class("B",A,{
-	constructor:function(){
-		this.childOfB = true;	
+	constructor:function(b){
+		this.childOfB = b;	
 	},
 	childMember:2,
 	dododo:function(){console.log("Let's dodododo")}
@@ -98,7 +100,7 @@ var B = Class("B",A,{
 var C = Class("C",B,{});
 
 var a1 = new A("asdfsafdsadf");
-a1.doSomething();
+//a1.doSomething();
 console.log(a1.GetClassName());
 var b = new B("bbbbbbbbb");
 b.doSomething();

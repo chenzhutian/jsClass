@@ -1,43 +1,32 @@
+<!DOCTYPE html>
+<head>
+</head>
 <body>
 
 
-<!--script src="./class.js"></script-->
-<script src="./klass.js"></script>
+<script src="./class.js"></script>
 <script>
-var Person = klass(function (name) { 
-		this.name = name;
-		console.log("call person constructor"); 
-	})
-	.methods({
-		walk:function(){
-			console.log("walk like a person");
+var A = (function(){
+	
+		var newName;
+		function _ChangeName(){
+			newName = this.name+"_private";
 		}
-	});
+			
+		return function A(name){
+			this.name = name;
+			
+			A.prototype.ShowName = function(){
+				_ChangeName.apply(this);
+				console.log(this.name);
+				console.log(newName);
+			}
+		}
+	})();
 
 
-
-var Boss = Person.extend(function(name){
-					this.bossName = name;
-					console.log("call boss constructor");
-				})
-				.methods({
-					walk:function(){
-						this.supr();
-						console.log("walk like a boss");
-					}
-				});
-
-var p = new Person("klassPerson");
-p.walk();
-var b = new Boss("Gate");
-b.walk();
-
-b.implement({
-	walk:function(){
-		console.log("super walk from now on");
-	}
-});
-b.walk();
-
+var a = new A("adsfasfd");
+a.ShowName();
+console.log("stop");
 </script>
 </body>
