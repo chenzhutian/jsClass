@@ -23,15 +23,17 @@ interface D{
 }
 
 class B extends A implements D{
-	private myMember1:string;
-	public myMember2:number;
+	private myMember1:string = "priva";
+	public myMember2:number = 2;
 	
 	constructor(a:string,b:number,c:Object);
 	constructor(a:string,b:number,c:boolean);
 	constructor(a:string,b:number,c){
 		super(a,b);
-		this.myMember1 = a;
-		this.myMember2 = b;
+		// this.myMember1 = a;
+		// this.myMember2 = b;
+		var temp = 0;
+		temp = 10;
 	}
 	
 	public dododo(){

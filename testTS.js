@@ -23,8 +23,12 @@ var B = (function (_super) {
     __extends(B, _super);
     function B(a, b, c) {
         _super.call(this, a, b);
-        this.myMember1 = a;
-        this.myMember2 = b;
+        this.myMember1 = "priva";
+        this.myMember2 = 2;
+        // this.myMember1 = a;
+        // this.myMember2 = b;
+        var temp = 0;
+        temp = 10;
     }
     B.prototype.dododo = function () {
         console.log(this.member2 + this.myMember1 + this.myMember2);
