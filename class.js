@@ -59,7 +59,17 @@ function Static(value) {
 
 //BaseClass(className)
 function BaseClass() {
+	this.id = this.GenID();
 }
+
+Object.defineProperty(BaseClass.prototype,"GenID",{
+	configurable:false,
+	writable:false,
+	value:function(){
+		
+	},
+	enumerable:true
+});
 
 Object.defineProperty(BaseClass.prototype,"className",{
 	configurable:false,
@@ -75,9 +85,13 @@ Object.defineProperty(BaseClass,"isClass",{
 	value:true
 });
 
+
+
 //Class(className,classContent)
 //Class(className,superClass,classContent)
 function Class() {
+	var mapToInternalReference = {};
+	
 	var className = arguments[0];
 	var classContents = arguments[arguments.length - 1];
 	
@@ -138,22 +152,27 @@ function Class() {
 	});
 	
 	
-	(function(directFunctionMember){
-		for(var funcName in directFunctionMember){
-			CopyReferenceMember(newClassType.prototype,internalPrototype,funcName,directFunctionMember,false);
-		}
-	})(directFunctionMember);
 
+	for (var funcName in directFunctionMember) {
+		CopyReferenceFunctionMemberOnPrototype(newClassType.prototype, funcName, directFunctionMember, false);
+	}
 
-
-	function CopyReferenceMember(target,source,memberName,members,isInternalObj) {
-		if(members[memberName] instanceof PublicMember){
-			Object.defineProperty(target,memberName,{
-				writable:false,
-				configurable:true,
-				enumerable:true,
-				value:function(){
-					return members[memberName].value.apply(source,arguments);
+	function CopyReferenceFunctionMemberOnPrototype(target, memberName, members, isInternalObj) {
+		if (members[memberName] instanceof PublicMember) {
+			Object.defineProperty(target, memberName, {
+				writable: false,
+				configurable: true,
+				enumerable: true,
+				value: function () {
+					console.log(mapToInternalReference);
+					for (var key in mapToInternalReference) {
+						if (mapToInternalReference.hasOwnProperty(key)) {
+							console.log(typeof key);
+							
+						}
+					}
+					members[memberName].value.apply(mapToInternalReference[this], arguments);
+					return mapToInternalReference;
 				}
 			});
 		}
@@ -186,7 +205,10 @@ function Class() {
 		
 		externalObj.internalObj = internalObj;
 		
+		
+		Object.seal(internalObj);
 		Object.seal(externalObj);
+		mapToInternalReference[externalObj] = internalObj;
 		return externalObj;
 	}
 	
@@ -195,15 +217,15 @@ function Class() {
 }
 
 var A = Class("A",{
-			constructor:function(){
+			constructor:function(privateName){
 				this.ChildOfA = true;
-				console.log("param is "+arguments[0]);
+				this.privaMember = privateName;
 			},
 			member:1,
-			privaMember:Private(2),
+			privaMember:Private(0),
 			staticMember:Static(2),
-			doSomething: Public(function (){console.log(this.privaMember);this.privDo();}),
-			privDo:Private(function(){console.log("it is Private");})
+			doSomething: Public(function (){this.privDo();console.log(this.privaMember); }),
+			privDo:Private(function(){console.log("it is Private"); this.privaMember = this.privaMember === 0 ? Math.random() * 10 : this.privaMember;})
 		});
 		
 var B = Class("B",{
@@ -217,20 +239,25 @@ var B = Class("B",{
 
 var C = Class("C",B,{});
 
-var a1 = new A("asdfsafdsadf");
+var a1 = new A("a1");
 a1.doSomething();
 //delete a1.ClassName;
-console.log(a1.ClassName);
+//console.log(a1.ClassName);
 var b = new B("bbbbbbbbb");
 b.dododo();
-console.log(b.ClassName);
-var a2 = new A("asdfsafd");
-console.log(a2.ClassName);
+//console.log(b.ClassName);
+var a2 = new A("a2");
+//console.log(a2.ClassName);
 a2.member = 3;
+a2.doSomething();
+a1.doSomething();
+
+console.log(a1.doSomething() === a2.doSomething());
+console.log(a1.doSomething() === b.dododo());
 // var c = new C("cccccccc");
 // c.dododo();
 // console.log(c.ClassName);
 
-console.log(a1.ClassName === b.ClassName);
+//console.log(a1.ClassName === b.ClassName);
 console.log(a1.doSomething === a2.doSomething);
 console.log("stop");
