@@ -59,24 +59,36 @@ function Static(value) {
 
 //BaseClass(className)
 function BaseClass() {
-	this.id = this.GenID();
+	
 }
 
-Object.defineProperty(BaseClass.prototype,"GenID",{
-	configurable:false,
-	writable:false,
-	value:function(){
-		
-	},
-	enumerable:true
-});
-
-Object.defineProperty(BaseClass.prototype,"className",{
+Object.defineProperty(BaseClass,"__constructor__",{
 	configurable:false,
 	writable:true,
-	value:"BaseClass",
-	enumerable:true
+	enumerable:true,
+	value:function(){
+		this.__objID__ = this.__GenID__();
+	}
 });
+
+Object.defineProperty(BaseClass,"internalPrototype",{
+	configurable:false,
+	writable:false,
+	enumerable:true,
+	value:{}
+});
+
+(function(){
+	var objID = -1;
+	Object.defineProperty(BaseClass.internalPrototype,"__GenID__",{
+		configurable:false,
+		writable:false,
+		value:function(){
+			return ++objID;
+		},
+		enumerable:false
+	});
+})();
 
 Object.defineProperty(BaseClass,"isClass",{
 	configurable:false,
@@ -84,7 +96,6 @@ Object.defineProperty(BaseClass,"isClass",{
 	enumerable:true,
 	value:true
 });
-
 
 
 //Class(className,classContent)
@@ -95,19 +106,29 @@ function Class() {
 	var className = arguments[0];
 	var classContents = arguments[arguments.length - 1];
 	
-	var superClass = arguments[1].isClass ? arguments[1] : BaseClass;
+	var superClass = arguments[1].__isClass__ ? arguments[1] : BaseClass;
 	var ctor = classContents.hasOwnProperty("constructor") ? classContents["constructor"] : function(){};
 	delete classContents["constructor"];
 		
-	var newClassType = (new Function("GenClass","return function " + className + "(){return GenClass.apply(arguments.callee);}"))(GenClass);		
+	var newClassType = (new Function("GenClass","return function " + className + "(){return GenClass.apply(arguments.callee,arguments);}"))(GenClass);		
 
-	// newClassType.prototype = Object.create(superClass.prototype);
-	// newClassType.prototype.constructor = newClassType;
+	newClassType.prototype = Object.create(superClass.prototype);
+	newClassType.prototype.constructor = newClassType;
 	newClassType.prototype.className = className;
-	
+		
 	var directAttributeMember = {};
 	var directFunctionMember = {};
-	var internalPrototype = {};
+	var flattenFunctionMember = {};
+	var flattenAttributeMember = {};
+	var internalPrototype = Object.create(superClass.internalPrototype);
+	
+	for(var p in superClass.flattenAttributeMember){
+		flattenAttributeMember[p] = superClass.flattenAttributeMember[p];
+	}
+	for(var p in superClass.flattenFunctionMember){
+		flattenFunctionMember[p] = superClass.flattenFunctionMember[p];
+	}
+	
 	for(var p in classContents){
 		if(!(classContents[p] instanceof Member)) classContents[p] = Public(classContents[p]);
 		if(classContents[p] instanceof StaticMember){
@@ -120,6 +141,7 @@ function Class() {
 		}else{
 			if(typeof classContents[p].value === "function"){
 				directFunctionMember[p] = classContents[p];
+				flattenFunctionMember[p] = classContents[p];
 				Object.defineProperty(internalPrototype,p,{
 					value:classContents[p].value,
 					enumerable:true,
@@ -128,29 +150,57 @@ function Class() {
 				});
 			}else{
 				directAttributeMember[p] = classContents[p];
+				flattenAttributeMember[p] = classContents[p];
 			}
 
 		}
 	}
+	
 	Object.defineProperty(newClassType,"directAttributeMember",{
 		value:directAttributeMember,
 		writable:false,
-		enumerable:true,
+		enumerable:false,
 		configurable:false
 	});
 	Object.defineProperty(newClassType,"directFunctionMember",{
 		value:directFunctionMember,
 		writable:false,
-		enumerable:true,
+		enumerable:false,
+		configurable:false
+	});
+	Object.defineProperty(newClassType,"flattenAttributeMember",{
+		value:flattenAttributeMember,
+		writable:false,
+		enumerable:false,
+		configurable:false
+	});
+	Object.defineProperty(newClassType,"flattenFunctionMember",{
+		value:flattenFunctionMember,
+		writable:false,
+		enumerable:false,
 		configurable:false
 	});
 	Object.defineProperty(newClassType,"internalPrototype",{
 		value:internalPrototype,
 		writable:false,
-		enumerable:true,
+		enumerable:false,
 		configurable:false
 	});
-	
+	Object.defineProperty(newClassType,"__constructor__",{
+		configurable:false,
+		writable:true,
+		enumerable:false,
+		value:function(){
+			superClass.__constructor__.apply(this,arguments);
+			ctor.apply(this,arguments);
+		}
+	});
+	Object.defineProperty(newClassType,"__isClass__",{
+		configurable:false,
+		writable:false,
+		enumerable:false,
+		value:true
+	});
 	
 
 	for (var funcName in directFunctionMember) {
@@ -164,15 +214,7 @@ function Class() {
 				configurable: true,
 				enumerable: true,
 				value: function () {
-					console.log(mapToInternalReference);
-					for (var key in mapToInternalReference) {
-						if (mapToInternalReference.hasOwnProperty(key)) {
-							console.log(typeof key);
-							
-						}
-					}
-					members[memberName].value.apply(mapToInternalReference[this], arguments);
-					return mapToInternalReference;
+					return members[memberName].value.apply(mapToInternalReference[this.__objID__], arguments);
 				}
 			});
 		}
@@ -182,33 +224,43 @@ function Class() {
 	function GenClass() {
 		var externalObj = Object.create(this.prototype);
 		var internalObj = Object.create(this.internalPrototype);
-		var directAttributeMember = this.directAttributeMember;
-		var directFunctionMember = this.directFunctionMember;
+		var flattenAttributeMember = this.flattenAttributeMember;
+		//var directFunctionMember = this.directFunctionMember;
 		
-		for(var p in directAttributeMember){
+		for(var p in flattenAttributeMember){
 			Object.defineProperty(internalObj,p,{
 				writable:true,
 				configurable:false,
 				enumerable:true,
-				value:directAttributeMember[p].value
+				value:flattenAttributeMember[p].value
 			});
 			
-			if(directAttributeMember[p] instanceof PublicMember){
+			if(flattenAttributeMember[p] instanceof PublicMember){
 				Object.defineProperty(externalObj,p,{
 					writable:true,
 					configurable:false,
 					enumerable:true,
-					value:directAttributeMember[p].value
+					value:flattenAttributeMember[p].value
 				});
 			}
 		}
 		
+		this.__constructor__.apply(internalObj,arguments);
+		//superClass.apply(internalObj,arguments);
+		//ctor.apply(internalObj,arguments);
+		
+		Object.defineProperty(externalObj,"__objID__",{
+			configurable:false,
+			enumerable:false,
+			get:function(){
+				return internalObj.__objID__;
+			}
+		});
+		
 		externalObj.internalObj = internalObj;
-		
-		
 		Object.seal(internalObj);
 		Object.seal(externalObj);
-		mapToInternalReference[externalObj] = internalObj;
+		mapToInternalReference[externalObj.__objID__] = internalObj;
 		return externalObj;
 	}
 	
@@ -219,7 +271,7 @@ function Class() {
 var A = Class("A",{
 			constructor:function(privateName){
 				this.ChildOfA = true;
-				this.privaMember = privateName;
+				//this.privaMember = privateName;
 			},
 			member:1,
 			privaMember:Private(0),
@@ -228,7 +280,7 @@ var A = Class("A",{
 			privDo:Private(function(){console.log("it is Private"); this.privaMember = this.privaMember === 0 ? Math.random() * 10 : this.privaMember;})
 		});
 		
-var B = Class("B",{
+var B = Class("B",A,{
 	constructor:function(b){
 		this.childOfB = b;	
 	},
@@ -252,12 +304,11 @@ a2.member = 3;
 a2.doSomething();
 a1.doSomething();
 
-console.log(a1.doSomething() === a2.doSomething());
-console.log(a1.doSomething() === b.dododo());
+console.log(a1.doSomething === a2.doSomething);
+console.log(a1.doSomething === b.dododo);
 // var c = new C("cccccccc");
 // c.dododo();
 // console.log(c.ClassName);
 
 //console.log(a1.ClassName === b.ClassName);
-console.log(a1.doSomething === a2.doSomething);
 console.log("stop");
